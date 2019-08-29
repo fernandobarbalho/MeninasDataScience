@@ -4,6 +4,7 @@ Repositório de apoio ao projeto Meninas em ciência de dados
 Na pasta data consta um arquivo csv com informações sobre escolas de nível fundamental para as séries finais. Esses dados contemplam todas as escolas municipais que participaram do IDEB e que tenham turmas nas séries finais do ensino fundamental
 
 A estrutura da tabela associada ao arquivo é essa:
+
  1-  "CO_MUNICIPIO" - Código IBGE do município
  2-  "Populacao" - População do município                    
  3-  "desp_aluno_mat" - despesa do município com educação por aluno matriculado 
