@@ -6,6 +6,7 @@ Na pasta data consta um arquivo csv com informações sobre escolas de nível fu
 A estrutura da tabela associada ao arquivo é essa:
 
  1-  "CO_MUNICIPIO" - Código IBGE do município
+ 
  2-  "Populacao" - População do município
  
  
