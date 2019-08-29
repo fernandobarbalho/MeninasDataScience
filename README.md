@@ -6,9 +6,9 @@ Na pasta data consta um arquivo csv com informações sobre escolas de nível fu
 A estrutura da tabela associada ao arquivo é essa:
 
  1-  "CO_MUNICIPIO" - Código IBGE do município
- 2-  "Populacao" - População do município                    
+ 2-  "Populacao" - População do município
  3-  "desp_aluno_mat" - despesa do município com educação por aluno matriculado 
- 4-  "CO_ENTIDADE" - Código da escola                  
+ 4-  "CO_ENTIDADE" - Código da escola
  5-  "IN_LOCAL_FUNC_PREDIO_ESCOLAR" - Indicador se a escola funciona em prédio escolar 
  6- "IN_LOCAL_FUNC_SALAS_EMPRESA"  - Indicador se a escola funciona em sala de empresa
  7-  "IN_LOCAL_FUNC_SOCIOEDUCATIVO"  - Indicador se a escola funciona em associação sócio-educativa
