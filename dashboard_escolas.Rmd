@@ -1,5 +1,5 @@
 ---
-title: "Untitled"
+title: "Painel de Escolas"
 output: 
   flexdashboard::flex_dashboard:
     orientation: columns
@@ -13,10 +13,21 @@ library(dplyr)
 library(readr)
 library(stringr)
 library(shiny)
-load("df_join_cluster_finais.RData")
-UFs_brasil <- read_csv("UFs_brasil - Sheet1.csv")
+
+options(scipen = 999)
+#load("df_join_cluster_finais.RData")
+
+load("escolas_campos_sel.RData")
+load("UFs_brasil.RData")
+
+ESCOLAS<- escolas_campos_sel
+rm(escolas_campos_sel)
+#UFs_brasil <- read_csv("UFs_brasil - Sheet1.csv")
 names(UFs_brasil)[1] <-"UF"
 names(UFs_brasil)[4] <-"REGIAO"
+
+ESCOLAS<- ESCOLAS %>%
+  inner_join(UFs_brasil)
 
 Municpios_IBGE <- read_csv("Municpios_IBGE - Sheet1.csv")
 
@@ -25,6 +36,8 @@ Municpios_IBGE <- read_csv("Municpios_IBGE - Sheet1.csv")
   Municpios_IBGE$CO_MUNICIPIO <- paste0(Municpios_IBGE$COD_UF,Municpios_IBGE$CO_MUNICIPIO)
   
   Municpios_IBGE$CO_MUNICIPIO <- as.numeric(Municpios_IBGE$CO_MUNICIPIO)
+  
+  names(ESCOLAS)[2]<-"Nome_Escola" 
 
 
 ```
@@ -36,9 +49,7 @@ Inputs {.sidebar data-width=200}
 
 ```{r}
 
-
-
-escolas_UF<- (df_join_cluster_finais%>%
+escolas_UF<- (ESCOLAS%>%
   #arrange(Nome_Escola) %>%
   mutate(escolas_estado = paste0(UF,"-",Nome_Escola)) %>%
     arrange(escolas_estado) %>%
@@ -67,7 +78,7 @@ renderText({
   
   
   
-  dados_escola<- df_join_cluster_finais%>%
+  dados_escola<- ESCOLAS%>%
     inner_join(Municpios_IBGE) %>%
     inner_join(UFs_brasil)%>%
     filter(Nome_Escola==escola_sel)%>%
@@ -81,382 +92,6 @@ renderText({
   }
   
   paste0("A escola selecionada ", texto_biblioteca)
-})
-
-```
-
-### Gráficos de escolas com biblioteca na cidade
-
-```{r}
-
-library(ggplot2)
-  
-renderPlot({
-  
-    escola_sel<- input$escola_id
-  
-  escola_sel <- substr(escola_sel,4,300)
-  
-  
-  
-  dados_escola<- df_join_cluster_finais%>%
-    inner_join(Municpios_IBGE) %>%
-    inner_join(UFs_brasil)%>%
-    filter(Nome_Escola==escola_sel)%>%
-    select(IN_BIBLIOTECA, IN_LABORATORIO_INFORMATICA, IN_QUADRA_ESPORTES, IN_INTERNET, UF, CO_MUNICIPIO,NOME_MUNICIPIO, REGIAO)
-
-    df_join_cluster_finais%>%
-    inner_join(Municpios_IBGE)%>%
-    filter(CO_MUNICIPIO==dados_escola$CO_MUNICIPIO) %>%
-    mutate(IN_BIBLIOTECA=ifelse(IN_BIBLIOTECA==1,"Com Biblioteca","Sem Biblioteca"))%>%
-    ggplot(aes(x= NOME_MUNICIPIO, fill=IN_BIBLIOTECA))+
-    geom_bar() +
-    coord_flip() +
-    theme_light()+ 
-      theme(
-        axis.title.y = element_blank(),
-        axis.title.x = element_blank(),
-        axis.text.y = element_blank()
-      )+
-  labs(y = "", 
-       x = "", 
-       title = dados_escola$NOME_MUNICIPIO,
-       fill = "")
-
-  
-})
-      
-
-
-```
-
-
-### Gráficos de escolas com biblioteca no estado
-
-```{r}
-
-library(ggplot2)
-  
-renderPlot({
-  
-      escola_sel<- input$escola_id
-  
-  escola_sel <- substr(escola_sel,4,300)
-  
-  
-  
-  dados_escola<- df_join_cluster_finais%>%
-    inner_join(Municpios_IBGE) %>%
-    inner_join(UFs_brasil)%>%
-    filter(Nome_Escola==escola_sel)%>%
-    select(IN_BIBLIOTECA, IN_LABORATORIO_INFORMATICA, IN_QUADRA_ESPORTES, IN_INTERNET, UF, CO_MUNICIPIO,NOME_MUNICIPIO, REGIAO)
-
-  
-    df_join_cluster_finais%>%
-    inner_join(Municpios_IBGE)%>%
-    filter(UF==dados_escola$UF) %>%
-    mutate(IN_BIBLIOTECA=ifelse(IN_BIBLIOTECA==1,"Com Biblioteca","Sem Biblioteca"))%>%
-    ggplot(aes(x= UF, fill=IN_BIBLIOTECA))+
-    geom_bar()+
-    coord_flip() +
-    theme_light()+ 
-      theme(
-        axis.title.y = element_blank(),
-        axis.title.x = element_blank(),
-        axis.text.y = element_blank()
-      )+
-  labs(y = "", 
-       x = "", 
-       title = dados_escola$UF,
-       fill = "")
-
-  
-})
-      
-
-
-```
-
-
-### Gráficos de escolas com biblioteca na região
-
-```{r}
-
-library(ggplot2)
-
-renderPlot({
-  
-      escola_sel<- input$escola_id
-  
-  escola_sel <- substr(escola_sel,4,300)
-  
-  
-  
-  dados_escola<- df_join_cluster_finais%>%
-    inner_join(Municpios_IBGE) %>%
-    inner_join(UFs_brasil)%>%
-    filter(Nome_Escola==escola_sel)%>%
-    select(IN_BIBLIOTECA, IN_LABORATORIO_INFORMATICA, IN_QUADRA_ESPORTES, IN_INTERNET, UF, CO_MUNICIPIO,NOME_MUNICIPIO, REGIAO)
-
-    df_join_cluster_finais%>%
-    inner_join(Municpios_IBGE)%>%
-    inner_join(UFs_brasil) %>%
-    filter(REGIAO==dados_escola$REGIAO) %>%
-    mutate(IN_BIBLIOTECA=ifelse(IN_BIBLIOTECA==1,"Com Biblioteca","Sem Biblioteca"))%>%
-    ggplot(aes(x= REGIAO, fill=IN_BIBLIOTECA))+
-    geom_bar()+
-    coord_flip() +
-    theme_light()+ 
-      theme(
-        axis.title.y = element_blank(),
-        axis.title.x = element_blank(),
-        axis.text.y = element_blank()
-      )+
-  labs(y = "", 
-       x = "", 
-       title = dados_escola$REGIAO,
-       fill = "")
-
-  
-})
-
-```
-
-
-### Gráficos de escolas com biblioteca no Brasil
-
-```{r}
-
-library(ggplot2)
-
-renderPlot({
-  
-
-      
-    df_join_cluster_finais%>%
-    mutate(IN_BIBLIOTECA=ifelse(IN_BIBLIOTECA==1,"Com Biblioteca","Sem Biblioteca"))%>%
-    mutate(Pais= "Brasil")%>%
-    ggplot(aes(x= Pais, fill=IN_BIBLIOTECA))+
-    geom_bar()+
-    coord_flip() +
-    theme_light()+ 
-      theme(
-        axis.title.y = element_blank(),
-        axis.title.x = element_blank(),
-        axis.text.y = element_blank()
-      )+
-  labs(y = "", 
-       x = "", 
-       title = "Brasil",
-       fill = "")
-
-  
-})
-
-```
-
-
-Column 
------------------------------------------------------------------------
-
-### Quadra de Esportes
-
-
-```{r}
-
-renderText({
-  
-  escola_sel<- input$escola_id
-  
-  escola_sel <- substr(escola_sel,4,300)
-  
-  
-  
-  dados_escola<- df_join_cluster_finais%>%
-    inner_join(Municpios_IBGE) %>%
-    inner_join(UFs_brasil)%>%
-    filter(Nome_Escola==escola_sel)%>%
-    select(IN_BIBLIOTECA, IN_LABORATORIO_INFORMATICA, IN_QUADRA_ESPORTES, IN_INTERNET, UF, CO_MUNICIPIO,NOME_MUNICIPIO, REGIAO)
-  
-  
-  if (dados_escola$IN_QUADRA_ESPORTES==0){
-    texto_quadra<- "não tem quadra de esportes"
-  } else{
-    texto_quadra<- "tem quadra de esportes"
-  }
-  
-  paste0("A escola selecionada ", texto_quadra)
-})
-
-```
-
-### Gráficos de escolas com quadra de esportes na cidade
-
-```{r}
-
-library(ggplot2)
-  
-renderPlot({
-  
-    escola_sel<- input$escola_id
-  
-  escola_sel <- substr(escola_sel,4,300)
-  
-  
-  
-  dados_escola<- df_join_cluster_finais%>%
-    inner_join(Municpios_IBGE) %>%
-    inner_join(UFs_brasil)%>%
-    filter(Nome_Escola==escola_sel)%>%
-    select(IN_BIBLIOTECA, IN_LABORATORIO_INFORMATICA, IN_QUADRA_ESPORTES, IN_INTERNET, UF, CO_MUNICIPIO,NOME_MUNICIPIO, REGIAO)
-
-    df_join_cluster_finais%>%
-    inner_join(Municpios_IBGE)%>%
-    filter(CO_MUNICIPIO==dados_escola$CO_MUNICIPIO) %>%
-    mutate(IN_QUADRA_ESPORTES=ifelse(IN_QUADRA_ESPORTES==1,"Com Quadra de esportes","Sem Quadra de esportes"))%>%
-    ggplot(aes(x= NOME_MUNICIPIO, fill=IN_QUADRA_ESPORTES))+
-    geom_bar() +
-    coord_flip() +
-    theme_light()+ 
-      theme(
-        axis.title.y = element_blank(),
-        axis.title.x = element_blank(),
-        axis.text.y = element_blank()
-      )+
-  labs(y = "", 
-       x = "", 
-       title = dados_escola$NOME_MUNICIPIO,
-       fill = "")
-
-  
-})
-      
-
-
-```
-
-
-### Gráficos de escolas com quadra de esportes no estado
-
-```{r}
-
-library(ggplot2)
-  
-renderPlot({
-  
-      escola_sel<- input$escola_id
-  
-  escola_sel <- substr(escola_sel,4,300)
-  
-  
-  
-  dados_escola<- df_join_cluster_finais%>%
-    inner_join(Municpios_IBGE) %>%
-    inner_join(UFs_brasil)%>%
-    filter(Nome_Escola==escola_sel)%>%
-    select(IN_BIBLIOTECA, IN_LABORATORIO_INFORMATICA, IN_QUADRA_ESPORTES, IN_INTERNET, UF, CO_MUNICIPIO,NOME_MUNICIPIO, REGIAO)
-
-  
-    df_join_cluster_finais%>%
-    inner_join(Municpios_IBGE)%>%
-    filter(UF==dados_escola$UF) %>%
-    mutate(IN_QUADRA_ESPORTES=ifelse(IN_QUADRA_ESPORTES==1,"Com Quadra de esportes","Sem Quadra de esportes"))%>%
-
-    ggplot(aes(x= UF, fill=IN_QUADRA_ESPORTES))+
-    geom_bar()+
-    coord_flip() +
-    theme_light()+ 
-      theme(
-        axis.title.y = element_blank(),
-        axis.title.x = element_blank(),
-        axis.text.y = element_blank()
-      )+
-  labs(y = "", 
-       x = "", 
-       title = dados_escola$UF,
-       fill = "")
-
-  
-})
-      
-
-
-```
-
-
-### Gráficos de escolas com quadra de esportes na região
-
-```{r}
-
-library(ggplot2)
-
-renderPlot({
-  
-      escola_sel<- input$escola_id
-  
-  escola_sel <- substr(escola_sel,4,300)
-  
-  
-  
-  dados_escola<- df_join_cluster_finais%>%
-    inner_join(Municpios_IBGE) %>%
-    inner_join(UFs_brasil)%>%
-    filter(Nome_Escola==escola_sel)%>%
-    select(IN_BIBLIOTECA, IN_LABORATORIO_INFORMATICA, IN_QUADRA_ESPORTES, IN_INTERNET, UF, CO_MUNICIPIO,NOME_MUNICIPIO, REGIAO)
-
-    df_join_cluster_finais%>%
-    inner_join(Municpios_IBGE)%>%
-    inner_join(UFs_brasil) %>%
-    filter(REGIAO==dados_escola$REGIAO) %>%
-    mutate(IN_QUADRA_ESPORTES=ifelse(IN_QUADRA_ESPORTES==1,"Com Quadra de esportes","Sem Quadra de esportes"))%>%
-    ggplot(aes(x= REGIAO, fill=IN_QUADRA_ESPORTES))+
-    geom_bar()+
-    coord_flip() +
-    theme_light()+ 
-      theme(
-        axis.title.y = element_blank(),
-        axis.title.x = element_blank(),
-        axis.text.y = element_blank()
-      )+
-  labs(y = "", 
-       x = "", 
-       title = dados_escola$REGIAO,
-       fill = "")
-
-  
-})
-
-```
-
-
-### Gráficos de escolas com quadra de esportes no Brasil
-
-```{r}
-
-library(ggplot2)
-
-renderPlot({
-  
-
-      
-    df_join_cluster_finais%>%
-    mutate(IN_QUADRA_ESPORTES=ifelse(IN_QUADRA_ESPORTES==1,"Com Quadra de esportes","Sem Quadra de esportes"))%>%
-    mutate(Pais= "Brasil")%>%
-    ggplot(aes(x= Pais, fill=IN_QUADRA_ESPORTES))+
-    geom_bar()+
-    coord_flip() +
-    theme_light()+ 
-      theme(
-        axis.title.y = element_blank(),
-        axis.title.x = element_blank(),
-        axis.text.y = element_blank()
-      )+
-  labs(y = "", 
-       x = "", 
-       title = "Brasil",
-       fill = "")
-
-  
 })
 
 ```
